@@ -1,0 +1,99 @@
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import mm
+from reportlab.lib.colors import Color
+from config import *
+from content import SECTION_TITLES, TABS
+
+
+def fit_logo(c, x, y, max_w, max_h, path=LOGO):
+    if not path.exists():
+        return
+    from PIL import Image
+    im = Image.open(path)
+    w, h = im.size
+    scale = min(max_w / w, max_h / h)
+    dw, dh = w * scale, h * scale
+    c.drawImage(str(path), x, y + (max_h-dh)/2, width=dw, height=dh, preserveAspectRatio=True, mask='auto')
+
+
+def draw_checkbox(c, x, y, label, checked=False, size=8, font=7.2):
+    c.setStrokeColor(MID)
+    c.setLineWidth(0.6)
+    c.rect(x, y-size+1, size, size, fill=0)
+    if checked:
+        c.setStrokeColor(DARK); c.line(x+1.5,y-3,x+3.2,y-5); c.line(x+3.2,y-5,x+6.5,y-1.5)
+    c.setFillColor(DARK); c.setFont("Helvetica", font)
+    c.drawString(x+size+4, y-size+1.5, label)
+
+
+def draw_field(c, x, y, w, label, h=28, small=False):
+    c.setFillColor(MID); c.setFont("Helvetica-Bold", 6.8 if small else 7.5)
+    c.drawString(x, y, label.upper())
+    c.setStrokeColor(LIGHT); c.setLineWidth(0.7)
+    c.line(x, y-15, x+w, y-15)
+
+
+def draw_dot_grid(c, x, y, w, h, spacing_mm=5, dot=0.45):
+    spacing = spacing_mm * mm
+    c.setFillColor(HexColor("#C8CFD0"))
+    yy = y
+    while yy <= y+h:
+        xx=x
+        while xx <= x+w:
+            c.circle(xx, yy, dot, stroke=0, fill=1)
+            xx += spacing
+        yy += spacing
+
+
+def draw_lined_area(c, x, y, w, h, spacing=24):
+    c.setStrokeColor(LIGHT); c.setLineWidth(0.5)
+    yy=y+h-spacing
+    while yy > y:
+        c.line(x, yy, x+w, yy); yy -= spacing
+
+
+def draw_section_box(c, x, y, w, h, title, subtitle=None):
+    c.setFillColor(FAINT); c.roundRect(x,y,w,h,6,fill=1,stroke=0)
+    c.setFillColor(DARK); c.setFont("Helvetica-Bold", 9)
+    c.drawString(x+10,y+h-17,title)
+    if subtitle:
+        c.setFillColor(MID); c.setFont("Helvetica",6.8)
+        c.drawString(x+10,y+h-29,subtitle)
+
+
+def draw_header(c, w, h, section, page_num, section_starts):
+    c.setFillColor(WHITE); c.rect(0,0,w,h,fill=1,stroke=0)
+    fit_logo(c, MARGIN, h-58, 78, 34)
+    c.setFillColor(DARK); c.setFont("Helvetica-Bold", 10)
+    c.drawRightString(w-MARGIN, h-34, SECTION_TITLES.get(section, section).upper())
+    c.setStrokeColor(GREEN); c.setLineWidth(2)
+    c.line(MARGIN, h-64, w-MARGIN, h-64)
+
+    # top navigation ribbon
+    available=w-2*MARGIN; tabw=available/len(TABS)
+    y=h-82
+    for key,label in TABS:
+        x=MARGIN+TABS.index((key,label))*tabw
+        active=(key==section)
+        c.setFillColor(GREEN if active else FAINT)
+        c.roundRect(x+1,y,tabw-2,TAB_H,3,fill=1,stroke=0)
+        c.setFillColor(WHITE if active else MID)
+        c.setFont("Helvetica-Bold", 4.9)
+        c.drawCentredString(x+tabw/2,y+6,label)
+        if key in section_starts:
+            c.linkRect('', f'section_{key}', Rect=(x+1,y,x+tabw-1,y+TAB_H), relative=0, thickness=0)
+
+    c.setFillColor(MID); c.setFont("Helvetica",6.2)
+    c.drawString(MARGIN, 14, f"{TITLE}  |  Version {VERSION}")
+    c.drawRightString(w-MARGIN,14,f"Page {page_num}")
+    c.setStrokeColor(LIGHT); c.setLineWidth(0.5); c.line(MARGIN,25,w-MARGIN,25)
+
+
+def page_title(c, x, y, title, subtitle=None):
+    c.setFillColor(DARK); c.setFont("Helvetica-Bold",16); c.drawString(x,y,title)
+    if subtitle:
+        c.setFillColor(MID); c.setFont("Helvetica",7.5); c.drawString(x,y-14,subtitle)
+
+
+def body_bounds(w,h):
+    return MARGIN, 40, w-2*MARGIN, h-135
