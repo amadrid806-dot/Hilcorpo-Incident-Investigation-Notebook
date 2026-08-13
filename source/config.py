@@ -13,18 +13,24 @@ PAGE_SIZES = {
     "a4": A4,
 }
 
+# Brand + e-ink palette
 GREEN = HexColor("#007A53")
+GREEN_DARK = HexColor("#005C3F")
 DARK = HexColor("#172124")
 MID = HexColor("#697579")
-LIGHT = HexColor("#E6EAEB")
-FAINT = HexColor("#F3F5F5")
+LIGHT = HexColor("#DDE3E4")
+FAINT = HexColor("#F4F6F6")
 WHITE = HexColor("#FFFFFF")
+GRID = HexColor("#C7CDCF")
 
-MARGIN = 34
-HEADER_H = 70
-FOOTER_H = 28
-TAB_H = 18
+# Layout constants tuned for handwriting and reMarkable use
+MARGIN = 36
+HEADER_H = 72
+FOOTER_H = 30
+TAB_H = 20
 GRID_MM = 5
-VERSION = "1.0"
+BODY_TOP_GAP = 8
+VERSION = "1.2"
 TITLE = "Hilcorp Incident Investigation Field Notebook"
 SUBTITLE = "Upstream Oil & Gas Operations"
+REVISION = "Design refinement release"
